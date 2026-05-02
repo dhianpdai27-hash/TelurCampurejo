@@ -1,296 +1,279 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>BUMDes CAMPUREJO SUKSES MANDIRI</title>
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-<style>
-body { background-color: #f8fafc; padding-bottom: 90px; }
-.app-card { background: white; border-radius: 12px; padding: 15px; border: 1px solid #e2e8f0; margin-bottom: 15px; }
-.tab { display: none; }
-.tab.active { display: block; }
-.bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; background: white; display: flex; border-top: 1px solid #e2e8f0; height: 75px; z-index: 1000; }
-.nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 11px; font-weight: bold; color: #64748b; border: none; background: none; }
-.nav-item.active { color: #2563eb; }
-.table-responsive { border-radius: 8px; overflow: hidden; }
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Kasir BUMDes CAMPUREJO SUKSES MANDIRI</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+        body { font-family: 'Inter', sans-serif; background-color: #f1f5f9; padding-bottom: 100px; }
+        
+        .bg-navy { background-color: #0f172a; }
+        .bottom-nav { 
+            position: fixed; bottom: 0; left: 0; right: 0; 
+            background: #1e293b; 
+            display: flex; justify-content: space-around; 
+            padding: 15px 0; z-index: 50;
+            border-top: 2px solid #334155;
+        }
+        .nav-item { color: #94a3b8; transition: all 0.3s; text-align: center; }
+        .active-nav { color: #ffffff !important; }
+        
+        .glass-card { background: white; border-radius: 16px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); border: 1px solid #e2e8f0; }
+        input { border: 1.5px solid #cbd5e1; border-radius: 12px; padding: 14px; width: 100%; font-size: 16px; outline: none; }
+        input:focus { border-color: #0f172a; box-shadow: 0 0 0 4px rgba(15, 23, 42, 0.05); }
+        th { background: #f8fafc; padding: 12px; font-weight: 700; color: #64748b; font-size: 10px; text-transform: uppercase; }
+    </style>
 </head>
 <body>
 
-<div class="p-3">
-<div class="bg-dark text-white p-4 rounded-4 mb-4 shadow">
-<h4 class="fw-bold mb-0 text-info">BUMDes CAMPUREJO SUKSES MANDIRI</h4>
-<small id="tgl-info"></small>
-<hr class="opacity-25">
-<div class="d-flex justify-content-between text-warning fw-bold">
-<small>Saldo Bersih Hari Ini:</small>
-<h5 id="dash-saldo">Rp 0</h5>
-</div>
-</div>
+    <header class="bg-navy text-white p-6 rounded-b-[40px] shadow-2xl mb-6">
+        <h1 class="text-lg font-bold opacity-80 mb-4">BUMDes Ngabei Berkah</h1>
+        <div class="grid grid-cols-2 gap-4">
+            <div class="bg-white/10 p-4 rounded-2xl border border-white/5">
+                <p class="text-[10px] uppercase opacity-70 mb-1">Saldo Bersih</p>
+                <h2 id="dash-saldo" class="text-xl font-bold">Rp 0</h2>
+            </div>
+            <div class="bg-white/10 p-4 rounded-2xl border border-white/5">
+                <p class="text-[10px] uppercase opacity-70 mb-1">Total Transaksi</p>
+                <h2 id="dash-count" class="text-xl font-bold text-blue-200">0</h2>
+            </div>
+        </div>
+    </header>
 
-<div id="tab-kasir" class="tab active">
-<div class="app-card">
-<label class="small fw-bold text-muted">PETUGAS ADMIN</label>
-<input type="text" id="admin" class="form-control mb-2" placeholder="Nama Admin">
-<div class="row g-2">
-<div class="col-6">
-<label class="small fw-bold text-muted">BERAT (KG)</label>
-<input type="number" id="berat" class="form-control" placeholder="0.0" oninput="hitung()">
-</div>
-<div class="col-6">
-<label class="small fw-bold text-muted">HARGA (RP)</label>
-<input type="number" id="harga" class="form-control" placeholder="25000" oninput="hitung()">
-</div>
-</div>
-</div>
-<div class="app-card bg-primary text-white text-center">
-<small class="opacity-75">TOTAL BAYAR</small>
-<h2 id="total-display" class="fw-bold">Rp 0</h2>
-</div>
-<button onclick="simpanTrx()" class="btn btn-dark w-100 py-3 fw-bold">SAVE & PRINT</button>
-</div>
+    <main id="app-content" class="px-4"></main>
 
-<div id="tab-biaya" class="tab">
-<div class="app-card border-start border-danger border-4">
-<h6 class="fw-bold text-danger">INPUT PENGELUARAN</h6>
-<input type="text" id="ket-biaya" class="form-control mb-2" placeholder="Keterangan">
-<input type="number" id="nom-biaya" class="form-control mb-3" placeholder="Nominal Rp">
-<button onclick="simpanBiaya()" class="btn btn-danger w-100 fw-bold">SIMPAN BIAYA</button>
-</div>
-<h6 class="fw-bold small text-muted px-2">DAFTAR BIAYA</h6>
-<div id="list-biaya-full"></div>
-</div>
+    <nav class="bottom-nav">
+        <button onclick="showPage('kasir')" class="nav-item" id="nav-kasir"><i data-lucide="layout-grid"></i><div class="text-[10px] mt-1">Kasir</div></button>
+        <button onclick="showPage('biaya')" class="nav-item" id="nav-biaya"><i data-lucide="receipt"></i><div class="text-[10px] mt-1">Biaya</div></button>
+        <button onclick="showPage('riwayat')" class="nav-item" id="nav-riwayat"><i data-lucide="clock"></i><div class="text-[10px] mt-1">Riwayat</div></button>
+        <button onclick="showPage('laporan')" class="nav-item" id="nav-laporan"><i data-lucide="file-bar-chart"></i><div class="text-[10px] mt-1">Laporan</div></button>
+        <button onclick="showPage('setting')" class="nav-item" id="nav-setting"><i data-lucide="settings"></i><div class="text-[10px] mt-1">Setting</div></button>
+    </nav>
 
-<div id="tab-riwayat" class="tab">
-<h6 class="fw-bold small text-muted px-2">RIWAYAT TRANSAKSI</h6>
-<div id="list-riwayat"></div>
-</div>
+    <script>
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxvbtxhCB87S42w-IWMd5MABnlnoG-aquqf99owOFHs2GXlO3WPPnGgJqGNTGlcLBkH/exec";
+        let dbData = { transaksi: [], biaya: [] };
+        let editId = null;
 
-<div id="tab-laporan" class="tab">
-<div class="app-card border-top border-dark border-4">
-<h6 class="fw-bold small">LAPORAN HARIAN</h6>
-<input type="date" id="tgl-lap" class="form-control mb-2" onchange="updateLaporan()">
-<div id="res-harian" class="p-2 bg-light rounded small fw-bold mb-2">Pilih Tanggal</div>
-<button onclick="cetakLaporan('Harian')" class="btn btn-dark btn-sm w-100">PRINT LAPORAN</button>
-</div>
-<div class="app-card border-top border-primary border-4">
-<h6 class="fw-bold small text-primary">LAPORAN BULANAN</h6>
-<input type="month" id="bln-lap" class="form-control mb-2" onchange="updateLaporan()">
-<div id="res-bulanan" class="p-2 bg-light rounded small fw-bold mb-2 text-primary">Pilih Bulan</div>
-<button onclick="cetakLaporan('Bulanan')" class="btn btn-primary btn-sm w-100">PRINT LAPORAN</button>
-</div>
-</div>
+        async function init() { showPage('kasir'); await refreshData(); }
 
-<div id="tab-opsi" class="tab">
-<div class="app-card text-center">
-<button onclick="exportExcel()" class="btn btn-success w-100 py-3 fw-bold mb-2">BACKUP KE EXCEL</button>
-<small class="text-muted">Data disimpan permanen di Google Sheets.</small>
-</div>
-</div>
-</div>
+        async function refreshData() {
+            try {
+                const res = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: 'getData' }) });
+                dbData = await res.json();
+                updateDashboard();
+            } catch (e) { console.error(e); }
+        }
 
-<nav class="bottom-nav shadow-lg">
-<button class="nav-item active" onclick="nav('kasir', this)">🛒 KASIR</button>
-<button class="nav-item" onclick="nav('biaya', this)">💸 BIAYA</button>
-<button class="nav-item" onclick="nav('riwayat', this)">📋 RIWAYAT</button>
-<button class="nav-item" onclick="nav('laporan', this)">📊 LAPORAN</button>
-<button class="nav-item" onclick="nav('opsi', this)">⚙️ OPSI</button>
-</nav>
-
-<script>
-// GANTI URL INI DENGAN URL WEB APP ANDA YANG TERBARU
-const API_URL = "https://script.google.com/macros/s/AKfycbxvbtxhCB87S42w-IWMd5MABnlnoG-aquqf99owOFHs2GXlO3WPPnGgJqGNTGlcLBkH/exec";
-
-let db_trx = [];
-let db_biaya = [];
-let limitTampilTrx = 20;
-
-const loading = (show) => {
-document.body.style.opacity = show ? "0.6" : "1";
-document.body.style.pointerEvents = show ? "none" : "auto";
-};
-
-window.onload = async () => {
-document.getElementById('tgl-info').innerText = new Date().toLocaleDateString('id-ID', {day:'numeric', month:'long', year:'numeric'});
-await muatDataDariCloud();
-};
-
-async function muatDataDariCloud() {
-try {
-loading(true);
-const res = await fetch(API_URL);
-const data = await res.json();
-db_trx = data.db_trx || [];
-db_biaya = data.db_biaya || [];
-updateDashboard();
-} catch (err) {
-alert("Gagal koneksi ke server!");
-} finally {
-loading(false);
-}
+        function updateDashboard() {
+    // Menghitung total pemasukan dari semua data transaksi
+    const totalIncome = dbData.transaksi.reduce((acc, curr) => acc + curr[5], 0);
+    
+    // Menghitung total pengeluaran dari semua data biaya
+    const totalExpense = dbData.biaya.reduce((acc, curr) => acc + curr[3], 0);
+    
+    // Menghitung jumlah seluruh transaksi yang pernah dilakukan
+    const totalCount = dbData.transaksi.length;
+    
+    // Update tampilan ke layar
+    document.getElementById('dash-saldo').innerText = `Rp ${(totalIncome - totalExpense).toLocaleString()}`;
+    document.getElementById('dash-count').innerText = totalCount;
 }
 
-function nav(s, el) {
-document.querySelectorAll('.tab').forEach(x => x.style.display = 'none');
-document.getElementById('tab-' + s).style.display = 'block';
-document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
-el.classList.add('active');
-if(s === 'riwayat') renderRiwayat();
-if(s === 'biaya') renderBiaya();
-}
+        const pages = {
+            kasir: `
+                <div class="glass-card p-6 mb-4">
+                    <h3 id="form-title" class="font-bold text-gray-800 mb-4">Input Transaksi</h3>
+                    <div class="space-y-4">
+                        <input type="text" id="k-admin" placeholder="Nama Petugas">
+                        <div class="grid grid-cols-2 gap-3">
+                            <input type="number" id="k-kg" placeholder="Berat (kg)" oninput="calcTotal()">
+                            <input type="number" id="k-harga" placeholder="Harga (Rp)" oninput="calcTotal()">
+                        </div>
+                        <div class="p-4 bg-gray-50 rounded-xl text-center border-2 border-dashed border-gray-200">
+                            <p class="text-[10px] text-gray-400 font-bold uppercase mb-1">Total Pembayaran</p>
+                            <h2 id="k-total-label" class="text-2xl font-bold text-navy">Rp 0</h2>
+                        </div>
+                        <div class="grid grid-cols-2 gap-3">
+                            <button onclick="simpanTransaksi()" id="btn-save-trx" class="bg-navy text-white py-4 rounded-xl font-bold">SIMPAN</button>
+                            <button onclick="printStrukForm()" class="bg-blue-600 text-white py-4 rounded-xl font-bold flex items-center justify-center gap-2"><i data-lucide="printer" size="18"></i> PRINT</button>
+                        </div>
+                    </div>
+                </div>`,
+            biaya: `
+                <div class="glass-card p-6 mb-6">
+                    <h3 id="biaya-title" class="font-bold text-gray-800 mb-4">Catat Biaya</h3>
+                    <div class="space-y-3">
+                        <input type="text" id="b-ket" placeholder="Keterangan">
+                        <input type="number" id="b-nom" placeholder="Nominal (Rp)">
+                        <button onclick="simpanBiaya()" id="btn-save-biaya" class="w-full bg-red-600 text-white py-4 rounded-xl font-bold">SIMPAN BIAYA</button>
+                    </div>
+                </div>
+                <div id="list-biaya" class="space-y-3"></div>`,
+            riwayat: `
+                <div class="glass-card overflow-hidden">
+                    <table class="w-full text-left">
+                        <thead><tr><th>Admin/Tgl</th><th>Total</th><th class="text-center">Aksi</th></tr></thead>
+                        <tbody id="table-riwayat-body" class="divide-y divide-gray-100"></tbody>
+                    </table>
+                </div>`,
+            laporan: `
+                <div class="glass-card p-6 mb-4 text-center">
+                    <input type="month" id="lap-bulan" class="mb-4" onchange="renderLaporan()">
+                    <div id="lap-res" class="space-y-3 text-left"></div>
+                </div>`,
+            setting: `
+                <div class="glass-card p-6 space-y-4">
+                    <button onclick="refreshData()" class="w-full bg-gray-100 py-4 rounded-xl font-bold">Sinkronkan Data</button>
+                    <button onclick="resetData()" class="w-full bg-red-50 text-red-600 py-4 rounded-xl font-bold border border-red-100">Reset Database</button>
+                </div>`
+        };
 
-function hitung() {
-const t = (Number(document.getElementById('berat').value) || 0) * (Number(document.getElementById('harga').value) || 0);
-document.getElementById('total-display').innerText = "Rp " + t.toLocaleString();
-}
+        function showPage(page) {
+            editId = null;
+            document.getElementById('app-content').innerHTML = pages[page];
+            document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active-nav'));
+            document.getElementById(`nav-${page}`).classList.add('active-nav');
+            lucide.createIcons();
+            if(page === 'riwayat') renderRiwayat();
+            if(page === 'biaya') renderBiaya();
+            if(page === 'laporan') { document.getElementById('lap-bulan').value = new Date().toISOString().slice(0, 7); renderLaporan(); }
+        }
 
-function updateDashboard() {
-const hariIni = new Date().toLocaleDateString('id-ID', {day:'2-digit', month:'2-digit', year:'numeric'});
-const totalMasuk = db_trx.filter(x => x.tgl && x.tgl.startsWith(hariIni)).reduce((a, b) => a + (Number(b.total) || 0), 0);
-const totalKeluar = db_biaya.filter(x => x.tgl && x.tgl.startsWith(hariIni)).reduce((a, b) => a + (Number(b.nominal) || 0), 0);
-document.getElementById('dash-saldo').innerText = "Rp " + (totalMasuk - totalKeluar).toLocaleString();
-}
+        function calcTotal() {
+            const kg = document.getElementById('k-kg').value || 0;
+            const hr = document.getElementById('k-harga').value || 0;
+            document.getElementById('k-total-label').innerText = `Rp ${(kg * hr).toLocaleString()}`;
+        }
 
-function cetakRawBT(item) {
-let s = " BUMDes CAMPUREJO SUKSES MANDIRI\n================================\nTgl : " + (item.tgl || "-") + "\nAdm : " + item.adm + "\n--------------------------------\nBERAT : " + item.kg + " Kg\nHARGA : Rp " + item.hrg.toLocaleString() + "\nTOTAL : Rp " + item.total.toLocaleString() + "\n================================\n TERIMA KASIH\n\n\n";
-window.location.href = "rawbt:base64," + btoa(s);
-}
+        async function simpanTransaksi() {
+            const kg = parseFloat(document.getElementById('k-kg').value);
+            const hr = parseFloat(document.getElementById('k-harga').value);
+            const data = {
+                action: editId ? 'editTransaksi' : 'tambahTransaksi',
+                id: editId,
+                admin: document.getElementById('k-admin').value,
+                kg: kg, harga: hr, total: kg * hr
+            };
+            if(!data.admin || !kg) return alert("Lengkapi data!");
+            await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify(data) });
+            await refreshData();
+            showPage('riwayat');
+        }
 
-async function simpanTrx() {
-const adm = document.getElementById('admin').value || 'Admin';
-const kg = Number(document.getElementById('berat').value);
-const hrg = Number(document.getElementById('harga').value);
-if(!kg) return alert("Isi Berat!");
-const item = { id: Date.now(), adm, kg, hrg, total: kg * hrg };
-try {
-loading(true);
-const res = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: "add_trx", data: item }) });
-if(res.ok) {
-db_trx.push({...item, tgl: new Date().toLocaleDateString('id-ID')});
-cetakRawBT(item);
-document.getElementById('berat').value = ""; hitung(); updateDashboard();
-}
-} catch (e) { alert("Gagal Simpan!"); } finally { loading(false); }
-}
+        function renderRiwayat() {
+            const container = document.getElementById('table-riwayat-body');
+            container.innerHTML = dbData.transaksi.slice().reverse().map(t => `
+                <tr class="text-[11px]">
+                    <td class="p-3"><strong>${t[2]}</strong><br><span class="text-gray-400 text-[9px]">${new Date(t[1]).toLocaleDateString()}</span></td>
+                    <td class="p-3 font-bold text-navy">Rp ${t[5].toLocaleString()}</td>
+                    <td class="p-3 flex justify-center gap-1">
+                        <button onclick="editTrx('${t[0]}')" class="p-2 bg-blue-50 text-blue-600 rounded-lg"><i data-lucide="edit-2" size="14"></i></button>
+                        <button onclick="hapusTrx('${t[0]}')" class="p-2 bg-red-50 text-red-500 rounded-lg"><i data-lucide="trash" size="14"></i></button>
+                    </td>
+                </tr>
+            `).join('');
+            lucide.createIcons();
+        }
 
-async function simpanBiaya() {
-const ket = document.getElementById('ket-biaya').value;
-const nom = Number(document.getElementById('nom-biaya').value);
-if(!nom) return alert("Isi nominal!");
-const item = { id: Date.now(), ket, nominal: nom };
-try {
-loading(true);
-const res = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: "add_biaya", data: item }) });
-if(res.ok) {
-db_biaya.push({...item, tgl: new Date().toLocaleDateString('id-ID')});
-document.getElementById('ket-biaya').value = ""; document.getElementById('nom-biaya').value = "";
-renderBiaya(); updateDashboard();
-}
-} catch (e) { alert("Gagal!"); } finally { loading(false); }
-}
+        function editTrx(id) {
+            const t = dbData.transaksi.find(x => x[0] === id);
+            showPage('kasir');
+            editId = id;
+            document.getElementById('k-admin').value = t[2];
+            document.getElementById('k-kg').value = t[3];
+            document.getElementById('k-harga').value = t[4];
+            calcTotal();
+            document.getElementById('btn-save-trx').innerText = "UPDATE DATA";
+        }
 
-function renderBiaya() {
-document.getElementById('list-biaya-full').innerHTML = db_biaya.slice().reverse().map(b => `
-<div class="app-card border-end border-danger border-4 py-2">
-<div class="d-flex justify-content-between align-items-center">
-<div><b>${b.ket}</b><br><small class="text-muted">${b.tgl.slice(0,10)}</small></div>
-<div class="text-end">
-<b class="text-danger">Rp ${Number(b.nominal).toLocaleString()}</b><br>
-<button onclick="editBiaya(${b.id},'${b.ket}',${b.nominal})" class="btn btn-link btn-sm p-0 me-2">Edit</button>
-<button onclick="hapusData(${b.id},'biaya')" class="btn btn-link btn-sm p-0 text-danger">Hapus</button>
-</div>
-</div>
-</div>`).join('') || '<p class="text-center py-3">Kosong</p>';
-}
+        async function hapusTrx(id) {
+            if(!confirm("Hapus transaksi?")) return;
+            await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: 'hapusTransaksi', id }) });
+            await refreshData();
+            renderRiwayat();
+        }
 
-function renderRiwayat() {
-const data = db_trx.slice().reverse().slice(0, limitTampilTrx);
-let h = `<div class="table-responsive"><table class="table table-sm table-striped small">
-<thead class="table-dark"><tr><th>Tgl/Adm</th><th>Detail</th><th>Aksi</th></tr></thead>
-<tbody>${data.map(x => `
-<tr>
-<td><small>${x.tgl.slice(0,10)}</small><br><b>${x.adm}</b></td>
-<td>${x.kg}kg<br><b class="text-primary">Rp${x.total.toLocaleString()}</b></td>
-<td>
-<div class="d-flex gap-1">
-<button onclick="cetakRawBT(${JSON.stringify(x).replace(/"/g, '&quot;')})" class="btn btn-dark btn-sm">🖨️</button>
-<button onclick="editTrx(${x.id},'${x.adm}',${x.kg},${x.hrg})" class="btn btn-primary btn-sm">✏️</button>
-<button onclick="hapusData(${x.id},'trx')" class="btn btn-danger btn-sm">🗑️</button>
-</div>
-</td>
-</tr>`).join('')}</tbody></table></div>`;
-if(db_trx.length > limitTampilTrx) h += `<button onclick="limitTampilTrx+=20;renderRiwayat()" class="btn btn-outline-primary btn-sm w-100">Muat Lebih Banyak...</button>`;
-document.getElementById('list-riwayat').innerHTML = h;
-}
+        function renderBiaya() {
+            document.getElementById('list-biaya').innerHTML = dbData.biaya.slice().reverse().map(b => `
+                <div class="glass-card p-4 flex justify-between items-center border-l-4 border-red-500">
+                    <div class="text-xs">
+                        <p class="font-bold text-gray-800">${b[2]}</p>
+                        <p class="text-red-600 font-bold">Rp ${b[3].toLocaleString()}</p>
+                    </div>
+                    <div class="flex gap-2">
+                        <button onclick="editBiaya('${b[0]}')" class="text-gray-300"><i data-lucide="edit" size="16"></i></button>
+                        <button onclick="hapusBiaya('${b[0]}')" class="text-red-200"><i data-lucide="trash" size="16"></i></button>
+                    </div>
+                </div>
+            `).join('');
+            lucide.createIcons();
+        }
 
-async function hapusData(id, type) {
-if(!confirm("Hapus permanen?")) return;
-try {
-loading(true);
-await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: "delete_data", data: { id, type } }) });
-if(type==='trx') db_trx = db_trx.filter(x=>x.id!=id); else db_biaya = db_biaya.filter(x=>x.id!=id);
-renderRiwayat(); renderBiaya(); updateDashboard();
-} catch (e) { alert("Gagal!"); } finally { loading(false); }
-}
+        function editBiaya(id) {
+            const b = dbData.biaya.find(x => x[0] === id);
+            editId = id;
+            document.getElementById('b-ket').value = b[2];
+            document.getElementById('b-nom').value = b[3];
+            document.getElementById('btn-save-biaya').innerText = "UPDATE BIAYA";
+        }
 
-async function editTrx(id, admLama, kgLama, hrgLama) {
-const adm = prompt("Nama Admin:", admLama);
-const kg = prompt("Berat:", kgLama);
-const hrg = prompt("Harga:", hrgLama);
-if(!adm || !kg || !hrg) return;
-const item = { id, adm, kg:Number(kg), hrg:Number(hrg), total:Number(kg)*Number(hrg) };
-try {
-loading(true);
-await fetch(API_URL, { method:'POST', body:JSON.stringify({action:"edit_trx", data:item})});
-const i = db_trx.findIndex(x=>x.id==id); db_trx[i] = {...db_trx[i], ...item};
-renderRiwayat(); updateDashboard();
-} catch (e) { alert("Gagal!"); } finally { loading(false); }
-}
+        async function simpanBiaya() {
+            const data = {
+                action: editId ? 'editBiaya' : 'tambahBiaya',
+                id: editId,
+                keterangan: document.getElementById('b-ket').value,
+                nominal: parseFloat(document.getElementById('b-nom').value)
+            };
+            await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify(data) });
+            await refreshData();
+            showPage('biaya');
+        }
 
-async function editBiaya(id, ketLama, nomLama) {
-const ket = prompt("Keterangan:", ketLama);
-const nom = prompt("Nominal:", nomLama);
-if(!ket || !nom) return;
-try {
-loading(true);
-await fetch(API_URL, { method:'POST', body:JSON.stringify({action:"edit_biaya", data:{id, ket, nominal:Number(nom)}})});
-const i = db_biaya.findIndex(b=>b.id==id); db_biaya[i].ket = ket; db_biaya[i].nominal = Number(nom);
-renderBiaya(); updateDashboard();
-} catch (e) { alert("Gagal!"); } finally { loading(false); }
-}
+        async function hapusBiaya(id) {
+            if(!confirm("Hapus biaya?")) return;
+            await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: 'hapusBiaya', id }) });
+            await refreshData();
+            renderBiaya();
+        }
 
-function updateLaporan() {
-const d = document.getElementById('tgl-lap').value;
-const m = document.getElementById('bln-lap').value;
-if(d) {
-const t = d.split('-').reverse().join('/');
-const o = db_trx.filter(x => x.tgl.startsWith(t)).reduce((a,b)=>a+(Number(b.total)||0),0);
-const b = db_biaya.filter(x => x.tgl.startsWith(t)).reduce((a,b)=>a+(Number(b.nominal)||0),0);
-document.getElementById('res-harian').innerHTML = `Masuk: Rp ${o.toLocaleString()}<br>Keluar: Rp ${b.toLocaleString()}<hr>LABA: Rp ${(o-b).toLocaleString()}`;
-}
-if(m) {
-const tM = m.split('-').reverse().join('/');
-const oM = db_trx.filter(x => x.tgl.includes(tM)).reduce((a,b)=>a+(Number(b.total)||0),0);
-const bM = db_biaya.filter(x => x.tgl.includes(tM)).reduce((a,b)=>a+(Number(b.nominal)||0),0);
-document.getElementById('res-bulanan').innerHTML = `Masuk: Rp ${oM.toLocaleString()}<br>Keluar: Rp ${bM.toLocaleString()}<hr>LABA: Rp ${(oM-bM).toLocaleString()}`;
-}
-}
+        function renderLaporan() {
+            const bln = document.getElementById('lap-bulan').value;
+            const trx = dbData.transaksi.filter(t => t[1].startsWith(bln)).reduce((a,b)=>a+b[5], 0);
+            const exp = dbData.biaya.filter(b => b[1].startsWith(bln)).reduce((a,b)=>a+b[3], 0);
+            document.getElementById('lap-res').innerHTML = `
+                <div class="p-4 bg-gray-50 rounded-xl">
+                    <p class="text-[10px] font-bold text-gray-400">TOTAL PENJUALAN</p>
+                    <p class="text-lg font-bold text-navy">Rp ${trx.toLocaleString()}</p>
+                </div>
+                <div class="p-4 bg-red-50 rounded-xl">
+                    <p class="text-[10px] font-bold text-red-400">TOTAL BIAYA</p>
+                    <p class="text-lg font-bold text-red-600">Rp ${exp.toLocaleString()}</p>
+                </div>
+                <div class="p-4 bg-navy text-white rounded-xl">
+                    <p class="text-[10px] font-bold opacity-70">SALDO BERSIH</p>
+                    <p class="text-xl font-bold">Rp ${(trx-exp).toLocaleString()}</p>
+                </div>`;
+        }
 
-function cetakLaporan(tipe) {
-const isi = (tipe === 'Harian') ? document.getElementById('res-harian').innerText : document.getElementById('res-bulanan').innerText;
-if(isi.includes("Pilih")) return alert("Pilih data!");
-const s = ` LAPORAN ${tipe.toUpperCase()}\n================================\n${isi}\n================================\n\n\n`;
-window.location.href = "rawbt:base64," + btoa(s);
-}
+        function printStrukForm() {
+            const adm = document.getElementById('k-admin').value;
+            const kg = document.getElementById('k-kg').value;
+            const hr = document.getElementById('k-harga').value;
+            const str = `BUMDes CAMPUREJO SUKSES MANDIRI\n------------------\nAdmin: ${adm}\nBerat: ${kg}kg\nHarga: ${hr}\nTotal: ${kg*hr}\n------------------`;
+            window.location.href = "rawbt:base64," + btoa(str);
+        }
 
-function exportExcel() {
-const wb = XLSX.utils.book_new();
-XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(db_trx), "Transaksi");
-XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(db_biaya), "Biaya");
-XLSX.writeFile(wb, "Backup_BUMDes.xlsx");
-}
-</script>
+        async function resetData() {
+            if(!confirm("RESET SEMUA DATA?")) return;
+            await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: 'resetData' }) });
+            location.reload();
+        }
+
+        init();
+    </script>
 </body>
 </html>
