@@ -46,7 +46,11 @@
         <button onclick="showPage('setting')" class="nav-item" id="nav-setting"><i data-lucide="settings"></i><div class="text-[10px] mt-1">Setting</div></button>
     </nav>
 
+
     <script>
+    let limitTrx = 20;
+let limitBiaya = 20;
+let limitTelur = 20; // Tambahkan ini
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyAE6ZdvdUmPlamcyIWwzdt692D9us_Hs6ESHotAqyP-y71Unkl5J_51briGDfK3LV3/exec";
         let dbData = { transaksi: [], biaya: [], telur: [] };
         let editId = null;
@@ -155,35 +159,49 @@
             lucide.createIcons();
         }
 
-        function renderBiayaList() {
+                function renderBiayaList() {
             const list = document.getElementById('list-biaya-render');
             if (!list) return;
-            if (dbData.biaya.length === 0) {
+            const dataSesuai = dbData.biaya.slice().reverse();
+            const dataTampil = dataSesuai.slice(0, limitBiaya);
+
+            if (dataSesuai.length === 0) {
                 list.innerHTML = `<p class="text-center text-xs text-gray-400 py-10">Belum ada data pengeluaran</p>`;
                 return;
             }
-            list.innerHTML = dbData.biaya.slice().reverse().slice(0, 10).map(b => `
+
+            let html = dataTampil.map(b => `
                 <div class="bg-white p-4 rounded-xl border border-gray-100 flex justify-between items-center shadow-sm mb-2">
-                    <div>
-                        <p class="text-xs font-bold text-gray-800">${b[2]}</p>
-                        <p class="text-[9px] text-gray-400">${new Date(b[1]).toLocaleDateString('id-ID')}</p>
-                    </div>
+                    <div><p class="text-xs font-bold text-gray-800">${b[2]}</p><p class="text-[9px] text-gray-400">${new Date(b[1]).toLocaleDateString('id-ID')}</p></div>
                     <div class="flex items-center gap-3">
                         <p class="text-red-600 font-bold text-sm">Rp ${b[3].toLocaleString()}</p>
                         <button onclick="hapusBiaya('${b[0]}')" class="text-gray-300 hover:text-red-500 transition"><i data-lucide="trash-2" size="16"></i></button>
                     </div>
                 </div>`).join('');
+
+            if (dataSesuai.length > limitBiaya) {
+                html += `<button onclick="limitBiaya += 20; renderBiayaList()" class="w-full py-3 text-[10px] font-bold text-gray-400 uppercase tracking-widest">Muat data lama...</button>`;
+            }
+
+            list.innerHTML = html;
             lucide.createIcons();
         }
 
-        function renderTelurList() {
+                function renderTelurList() {
             const list = document.getElementById('list-telur-render');
             if (!list) return;
-            if (dbData.telur.length === 0) {
+
+            // Membalik urutan data (terbaru di atas)
+            const dataSesuai = dbData.telur.slice().reverse();
+            // Mengambil data sesuai limit yang ditentukan (limitTelur)
+            const dataTampil = dataSesuai.slice(0, limitTelur);
+
+            if (dataSesuai.length === 0) {
                 list.innerHTML = `<p class="text-center text-xs text-gray-400 py-4">Belum ada data panen</p>`;
                 return;
             }
-            list.innerHTML = dbData.telur.slice().reverse().slice(0, 10).map(e => `
+
+            let html = dataTampil.map(e => `
                 <div class="bg-white p-4 rounded-xl border border-gray-100 flex justify-between items-center shadow-sm mb-2">
                     <div>
                         <p class="text-xs font-bold text-gray-800">Panen Telur</p>
@@ -191,11 +209,24 @@
                     </div>
                     <div class="flex items-center gap-3">
                         <p class="text-yellow-600 font-black text-sm">${e[2]} Pcs/Kg</p>
-                        <button onclick="hapusTelur('${e[0]}')" class="text-gray-300 hover:text-red-500"><i data-lucide="trash-2" size="14"></i></button>
+                        <button onclick="hapusTelur('${e[0]}')" class="text-gray-300 hover:text-red-500 transition">
+                            <i data-lucide="trash-2" size="14"></i>
+                        </button>
                     </div>
                 </div>`).join('');
+
+            // Tambahkan tombol muat lebih banyak jika jumlah data melebihi limit saat ini
+            if (dataSesuai.length > limitTelur) {
+                html += `
+                <button onclick="limitTelur += 20; renderTelurList()" class="w-full py-4 mt-2 text-[10px] font-bold text-gray-400 border-2 border-dashed border-gray-100 rounded-xl hover:bg-gray-50 transition uppercase tracking-widest">
+                    Muat data lama...
+                </button>`;
+            }
+
+            list.innerHTML = html;
             lucide.createIcons();
         }
+
 
         async function hapusBiaya(id) {
             if(!confirm("Hapus data biaya ini?")) return;
@@ -220,13 +251,17 @@
             await refreshData(); showPage('riwayat');
         }
 
-        function renderRiwayat() {
+                function renderRiwayat() {
             const container = document.getElementById('table-riwayat-body');
-            if(dbData.transaksi.length === 0) {
+            const dataSesuai = dbData.transaksi.slice().reverse();
+            const dataTampil = dataSesuai.slice(0, limitTrx);
+
+            if(dataSesuai.length === 0) {
                 container.innerHTML = `<tr><td colspan="3" class="text-center py-10 text-gray-400">Belum ada transaksi</td></tr>`;
                 return;
             }
-            container.innerHTML = dbData.transaksi.slice().reverse().map(t => `
+
+            let html = dataTampil.map(t => `
                 <tr class="text-[11px]">
                     <td class="p-3"><strong>${t[2]}</strong><br><span class="text-gray-400 text-[9px]">${new Date(t[1]).toLocaleDateString()}</span></td>
                     <td class="p-3 font-bold text-navy">Rp ${t[5].toLocaleString()}</td>
@@ -235,8 +270,16 @@
                         <button onclick="hapusTrx('${t[0]}')" class="p-2 bg-red-50 text-red-500 rounded-lg"><i data-lucide="trash" size="14"></i></button>
                     </div></td>
                 </tr>`).join('');
+
+            // Tambahkan tombol Load More jika masih ada data sisa
+            if (dataSesuai.length > limitTrx) {
+                html += `<tr><td colspan="3" class="p-4 text-center"><button onclick="limitTrx += 20; renderRiwayat()" class="text-xs font-bold text-blue-600 bg-blue-50 px-4 py-2 rounded-lg">MUAT LEBIH BANYAK (+20)</button></td></tr>`;
+            }
+
+            container.innerHTML = html;
             lucide.createIcons();
         }
+
 
         function editTrx(id) {
             const t = dbData.transaksi.find(x => x[0] === id);
