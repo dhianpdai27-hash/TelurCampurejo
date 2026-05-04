@@ -126,11 +126,9 @@
             if(page === 'laporan') { document.getElementById('lap-bulan').value = new Date().toISOString().slice(0, 7); renderLaporan(); }
         }
 
-                function setTabBiaya(tab) {
+        function setTabBiaya(tab) {
             activeTabBiaya = tab;
             const container = document.getElementById('biaya-form-container');
-            
-            // Atur gaya tombol tab
             document.getElementById('tab-p').className = tab === 'pengeluaran' ? 'flex-1 py-3 text-xs tab-active' : 'flex-1 py-3 text-xs text-gray-400';
             document.getElementById('tab-t').className = tab === 'telur' ? 'flex-1 py-3 text-xs tab-active' : 'flex-1 py-3 text-xs text-gray-400';
             
@@ -157,18 +155,13 @@
             lucide.createIcons();
         }
 
-        // --- FUNGSI UNTUK MENAMPILKAN DAFTAR BIAYA ---
-                function renderBiayaList() {
-            // Pastikan ID di sini adalah 'list-biaya-render'
+        function renderBiayaList() {
             const list = document.getElementById('list-biaya-render');
             if (!list) return;
-
             if (dbData.biaya.length === 0) {
                 list.innerHTML = `<p class="text-center text-xs text-gray-400 py-10">Belum ada data pengeluaran</p>`;
                 return;
             }
-
-            // Ambil 10 data biaya terakhir
             list.innerHTML = dbData.biaya.slice().reverse().slice(0, 10).map(b => `
                 <div class="bg-white p-4 rounded-xl border border-gray-100 flex justify-between items-center shadow-sm mb-2">
                     <div>
@@ -177,27 +170,21 @@
                     </div>
                     <div class="flex items-center gap-3">
                         <p class="text-red-600 font-bold text-sm">Rp ${b[3].toLocaleString()}</p>
-                        <button onclick="hapusBiaya('${b[0]}')" class="text-gray-300 hover:text-red-500 transition">
-                            <i data-lucide="trash-2" size="16"></i>
-                        </button>
+                        <button onclick="hapusBiaya('${b[0]}')" class="text-gray-300 hover:text-red-500 transition"><i data-lucide="trash-2" size="16"></i></button>
                     </div>
-                </div>
-            `).join('');
-            
-            // Re-inisialisasi ikon lucide agar muncul
+                </div>`).join('');
             lucide.createIcons();
         }
 
-
-        // --- FUNGSI UNTUK MENAMPILKAN DAFTAR HASIL PANEN TELUR ---
         function renderTelurList() {
             const list = document.getElementById('list-telur-render');
+            if (!list) return;
             if (dbData.telur.length === 0) {
                 list.innerHTML = `<p class="text-center text-xs text-gray-400 py-4">Belum ada data panen</p>`;
                 return;
             }
             list.innerHTML = dbData.telur.slice().reverse().slice(0, 10).map(e => `
-                <div class="bg-white p-4 rounded-xl border border-gray-100 flex justify-between items-center shadow-sm">
+                <div class="bg-white p-4 rounded-xl border border-gray-100 flex justify-between items-center shadow-sm mb-2">
                     <div>
                         <p class="text-xs font-bold text-gray-800">Panen Telur</p>
                         <p class="text-[9px] text-gray-400">${new Date(e[1]).toLocaleDateString('id-ID')}</p>
@@ -206,42 +193,31 @@
                         <p class="text-yellow-600 font-black text-sm">${e[2]} Pcs/Kg</p>
                         <button onclick="hapusTelur('${e[0]}')" class="text-gray-300 hover:text-red-500"><i data-lucide="trash-2" size="14"></i></button>
                     </div>
-                </div>
-            `).join('');
+                </div>`).join('');
             lucide.createIcons();
         }
 
-        // Tambahkan juga fungsi hapus biaya dan telur jika belum ada
         async function hapusBiaya(id) {
             if(!confirm("Hapus data biaya ini?")) return;
             await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: 'hapusBiaya', id }) });
-            await refreshData();
-            setTabBiaya('pengeluaran');
+            await refreshData(); setTabBiaya('pengeluaran');
         }
 
         async function hapusTelur(id) {
             if(!confirm("Hapus data panen ini?")) return;
             await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: 'hapusTelur', id }) });
-            await refreshData();
-            setTabBiaya('telur');
+            await refreshData(); setTabBiaya('telur');
         }
-
-
 
         async function simpanDanPrint() {
             const kg = parseFloat(document.getElementById('k-kg').value);
             const hr = parseFloat(document.getElementById('k-harga').value);
             const adm = document.getElementById('k-admin').value;
             if(!adm || isNaN(kg)) return alert("Lengkapi data!");
-
             const data = { action: editId ? 'editTransaksi' : 'tambahTransaksi', id: editId, admin: adm, kg: kg, harga: hr, total: kg * hr };
             await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify(data) });
-            
-            const struk = `BUMDes Campurejo Sukses Mandiri\n------------------\nPetugas: ${adm}\nBerat: ${kg} kg\nHarga: Rp ${hr.toLocaleString()}\nTotal: Rp ${(kg*hr).toLocaleString()}\n------------------\nTerima Kasih`;
-            window.location.href = "rawbt:base64," + btoa(struk);
-            
-            await refreshData();
-            showPage('riwayat');
+            window.location.href = "rawbt:base64," + btoa(`BUMDes Campurejo\nTotal: Rp ${(kg*hr).toLocaleString()}`);
+            await refreshData(); showPage('riwayat');
         }
 
         function renderRiwayat() {
@@ -254,14 +230,11 @@
                 <tr class="text-[11px]">
                     <td class="p-3"><strong>${t[2]}</strong><br><span class="text-gray-400 text-[9px]">${new Date(t[1]).toLocaleDateString()}</span></td>
                     <td class="p-3 font-bold text-navy">Rp ${t[5].toLocaleString()}</td>
-                    <td class="p-3 text-center">
-                        <div class="flex justify-center gap-2">
-                            <button onclick="editTrx('${t[0]}')" class="p-2 bg-blue-50 text-blue-600 rounded-lg"><i data-lucide="edit-2" size="14"></i></button>
-                            <button onclick="hapusTrx('${t[0]}')" class="p-2 bg-red-50 text-red-500 rounded-lg"><i data-lucide="trash" size="14"></i></button>
-                        </div>
-                    </td>
-                </tr>
-            `).join('');
+                    <td class="p-3 text-center"><div class="flex justify-center gap-2">
+                        <button onclick="editTrx('${t[0]}')" class="p-2 bg-blue-50 text-blue-600 rounded-lg"><i data-lucide="edit-2" size="14"></i></button>
+                        <button onclick="hapusTrx('${t[0]}')" class="p-2 bg-red-50 text-red-500 rounded-lg"><i data-lucide="trash" size="14"></i></button>
+                    </div></td>
+                </tr>`).join('');
             lucide.createIcons();
         }
 
@@ -274,7 +247,6 @@
             document.getElementById('k-harga').value = t[4];
             document.getElementById('form-title').innerText = "Update Transaksi";
             calcTotal();
-            lucide.createIcons();
         }
 
         async function hapusTrx(id) {
@@ -284,15 +256,18 @@
         }
 
         async function simpanBiaya() {
-            const data = { action: 'tambahBiaya', keterangan: document.getElementById('b-ket').value, nominal: parseFloat(document.getElementById('b-nom').value) };
-            await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify(data) });
+            const ket = document.getElementById('b-ket').value;
+            const nom = document.getElementById('b-nom').value;
+            if(!ket || !nom) return alert("Isi keterangan dan nominal!");
+            await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: 'tambahBiaya', keterangan: ket, nominal: parseFloat(nom) }) });
             await refreshData(); setTabBiaya('pengeluaran');
         }
 
         async function simpanTelur() {
             const qty = document.getElementById('e-qty').value;
+            if(!qty) return alert("Isi jumlah telur!");
             await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: 'tambahTelur', jumlah: parseFloat(qty) }) });
-            await refreshData(); showPage('riwayat');
+            await refreshData(); setTabBiaya('telur');
         }
 
         function renderLaporan() {
@@ -300,11 +275,9 @@
             const trx = dbData.transaksi.filter(t => t[1].startsWith(bln));
             const exp = dbData.biaya.filter(b => b[1].startsWith(bln));
             const egg = dbData.telur.filter(e => e[1].startsWith(bln));
-
             const sTrx = trx.reduce((a,b)=>a+b[5], 0);
             const sExp = exp.reduce((a,b)=>a+b[3], 0);
             const sEgg = egg.reduce((a,b)=>a+b[2], 0);
-
             document.getElementById('lap-res').innerHTML = `
                 <div class="grid grid-cols-2 gap-3">
                     <div class="p-4 bg-blue-50 rounded-2xl text-left"><p class="text-[9px] font-bold text-blue-400">PENJUALAN</p><p class="font-bold text-navy">Rp ${sTrx.toLocaleString()}</p></div>
@@ -318,7 +291,7 @@
         }
 
         async function resetData() {
-            if(!confirm("Hapus seluruh data di database?")) return;
+            if(!confirm("Hapus seluruh data?")) return;
             await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: 'resetData' }) });
             location.reload();
         }
@@ -326,17 +299,8 @@
         function calcTotal() {
             const kg = document.getElementById('k-kg').value || 0;
             const hr = document.getElementById('k-harga').value || 0;
-            document.getElementById('k-total-label').innerText = `Rp ${(kg * hr).toLocaleString()}`;
-        }
-
-        function renderBiayaList() {
-            const list = document.getElementById('list-biaya');
-            list.innerHTML = dbData.biaya.slice().reverse().map(b => `
-                <div class="bg-white p-3 rounded-xl border border-gray-100 flex justify-between items-center shadow-sm">
-                    <div class="text-[10px]"><strong>${b[2]}</strong><br>${new Date(b[1]).toLocaleDateString()}</div>
-                    <div class="text-red-500 font-bold text-xs">Rp ${b[3].toLocaleString()}</div>
-                </div>
-            `).join('');
+            const lbl = document.getElementById('k-total-label');
+            if(lbl) lbl.innerText = `Rp ${(kg * hr).toLocaleString()}`;
         }
 
         init();
