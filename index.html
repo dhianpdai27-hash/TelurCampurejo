@@ -158,26 +158,36 @@
         }
 
         // --- FUNGSI UNTUK MENAMPILKAN DAFTAR BIAYA ---
-        function renderBiayaList() {
+                function renderBiayaList() {
+            // Pastikan ID di sini adalah 'list-biaya-render'
             const list = document.getElementById('list-biaya-render');
+            if (!list) return;
+
             if (dbData.biaya.length === 0) {
-                list.innerHTML = `<p class="text-center text-xs text-gray-400 py-4">Belum ada data biaya</p>`;
+                list.innerHTML = `<p class="text-center text-xs text-gray-400 py-10">Belum ada data pengeluaran</p>`;
                 return;
             }
+
+            // Ambil 10 data biaya terakhir
             list.innerHTML = dbData.biaya.slice().reverse().slice(0, 10).map(b => `
-                <div class="bg-white p-4 rounded-xl border border-gray-100 flex justify-between items-center shadow-sm">
+                <div class="bg-white p-4 rounded-xl border border-gray-100 flex justify-between items-center shadow-sm mb-2">
                     <div>
                         <p class="text-xs font-bold text-gray-800">${b[2]}</p>
                         <p class="text-[9px] text-gray-400">${new Date(b[1]).toLocaleDateString('id-ID')}</p>
                     </div>
                     <div class="flex items-center gap-3">
                         <p class="text-red-600 font-bold text-sm">Rp ${b[3].toLocaleString()}</p>
-                        <button onclick="hapusBiaya('${b[0]}')" class="text-gray-300 hover:text-red-500"><i data-lucide="trash-2" size="14"></i></button>
+                        <button onclick="hapusBiaya('${b[0]}')" class="text-gray-300 hover:text-red-500 transition">
+                            <i data-lucide="trash-2" size="16"></i>
+                        </button>
                     </div>
                 </div>
             `).join('');
+            
+            // Re-inisialisasi ikon lucide agar muncul
             lucide.createIcons();
         }
+
 
         // --- FUNGSI UNTUK MENAMPILKAN DAFTAR HASIL PANEN TELUR ---
         function renderTelurList() {
